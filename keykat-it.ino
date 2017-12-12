@@ -27,10 +27,20 @@ struct computer {
   unsigned int ttf;  //time to failure (in frames)
   compstate state;   //the current computer state
 };
-computer comps[] = {{computer_off, 16, 24, 0, OFF},
-                    {computer_off, 28, 24, 0, OFF},
-                    {computer_off, 40, 24, 0, OFF}};
-unsigned int ncomps = 3;
+computer comps[] = {{computer_off, 16, 0, 0, OFF},
+                    {computer_off, 28, 0, 0, OFF},
+                    {computer_off, 40, 0, 0, OFF},
+                    {computer_off, 80, 0, 0, OFF},
+                    {computer_off, 92, 0, 0, OFF},
+                    {computer_off, 104, 0, 0, OFF},
+                    {computer_off, 16, 32, 0, OFF},
+                    {computer_off, 28, 32, 0, OFF},
+                    {computer_off, 40, 32, 0, OFF},
+                    {computer_off, 80, 32, 0, OFF},
+                    {computer_off, 92, 32, 0, OFF},
+                    {computer_off, 104, 32, 0, OFF}};
+                    
+unsigned int ncomps = 12;
 unsigned int maxttf = 600;
 
 
@@ -52,8 +62,8 @@ void setup() {
 
   //initialize keykat
   keykat = keykat_standing;
-  kx = 0;
-  ky = 0;
+  kx = 60;
+  ky = 15;
   kmoving = false;
 
   //initialize button state
