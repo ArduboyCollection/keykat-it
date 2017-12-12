@@ -14,7 +14,7 @@ bool btnb;
 unsigned int frameCount = 0;
 
 //keykat status
-unsigned int kx, ky;  //position
+int kx, ky;  //position
 sprite keykat;
 bool kmoving;
 
@@ -52,6 +52,7 @@ void drawComputers();
 void turnComputerOn(computer &comp);
 void turnComputerOff(computer &comp);
 void breakComputer(computer &comp);
+bool collision(int x, int y);
 
 
 void setup() {
@@ -143,15 +144,25 @@ void drawKeyKat()
     keykat = keykat_standing;
   }
 
-  //update coordinates
+  //update coordinates (if no collision occur)
   if(btnup) {
-    ky--;
+    if(not collision(kx, ky-1)){
+      ky--;
+    }
   } else if(btndown) {
-    ky++;
-  } else if(btnleft) {
-    kx--;
+    if(not collision(kx, ky+1)) {
+      ky++;
+    }
+  } 
+  
+  if(btnleft) {
+    if(not collision(kx-1, ky)) {
+      kx--;
+    }
   } else if(btnright) {
-    kx++;
+    if(not collision(kx+1, ky)) {
+      kx++;
+    }
   }
 
   //draw keykat
@@ -216,3 +227,35 @@ void breakComputer(computer &comp)
   comp.s = computer_broken;
 }
 
+
+/* 
+ * Returns true if KeyKat would be in a collision with something at
+ * the specified point.
+ */
+bool collision(int x, int y)
+{
+  int kxmax, kymax;
+  int cxmax, cymax;
+  
+  //edge collision
+  if(x < 0 or x > 120 or y < 0 or y > 48) {
+    return true;
+  } 
+
+  //check the computers
+  kxmax = x + 7;
+  kymax = y + 15;
+  for(int i=0; i<ncomps; i++) {
+    //computer bounding boxes (allowing for keyboard traversal)
+    cxmax = comps[i].x + 7;
+    cymax = comps[i].y + 5;
+
+    //just simple axis aligned bounding box
+    if(x <= cxmax && comps[i].x <= kxmax && y <= cymax && comps[i].y <= kymax) {
+      return true;
+    }
+  }
+  
+  //all passed! no collision
+  return false;
+}
