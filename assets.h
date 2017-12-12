@@ -2,7 +2,7 @@
 #define ASSETS_H
 
 struct sprite {
-  unsigned int offset;
+  unsigned char *bitmap;
   unsigned int width;
   unsigned int height;
   unsigned int frames;
@@ -37,10 +37,10 @@ const unsigned char sprite_data[] PROGMEM{
 
 
 //sprites in struct format (all carved out and everything)
-const sprite keykat_standing  = { 16 * 0, 8, 16, 1, 60, 0};
-const sprite keykat_walking   = { 16 * 1, 8, 16, 2, 30, 0};
-const sprite computer_off     = { 16 * 3, 8, 16, 1, 60, 0};
-const sprite computer_working = { 16 * 4, 8, 16, 2, 30, 0};
-const sprite computer_broken  = { 16 * 6, 8, 16, 3, 5, 0};
+const sprite keykat_standing  = { sprite_data + 16 * 0, 8, 16, 1, 60, 0};
+const sprite keykat_walking   = { sprite_data + 16 * 1, 8, 16, 2, 10, 0};
+const sprite computer_off     = { sprite_data + 16 * 3, 8, 16, 1, 60, 0};
+const sprite computer_working = { sprite_data + 16 * 4, 8, 16, 2, 30, 0};
+const sprite computer_broken  = { sprite_data + 16 * 6, 8, 16, 3, 5, 0};
 
 #endif
