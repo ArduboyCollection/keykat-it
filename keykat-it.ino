@@ -2,13 +2,6 @@
 #include "assets.h"
 Arduboy arduboy;
 
-
-
-//support functions
-void renderSprite(int x, int y, sprite &s);
-void updateButtons();
-void drawKeyKat();
-
 //button state global
 bool btnup;
 bool btndown;
@@ -25,11 +18,37 @@ unsigned int kx, ky;  //position
 sprite keykat;
 bool kmoving;
 
+//computer types and globals
+enum compstate {ON, OFF, BROKEN};
+struct computer {
+  sprite s;          //the computer's sprite
+  unsigned int x;    // position x
+  unsigned int y;    // position y
+  unsigned int ttf;  //time to failure (in frames)
+  compstate state;   //the current computer state
+};
+computer comps[] = {{computer_off, 16, 24, 0, OFF},
+                    {computer_off, 28, 24, 0, OFF},
+                    {computer_off, 40, 24, 0, OFF}};
+unsigned int ncomps = 3;
+unsigned int maxttf = 600;
+
+
+//Prototypes
+void renderSprite(int x, int y, sprite &s);
+void updateButtons();
+void drawKeyKat();
+void drawComputers();
+void turnComputerOn(computer &comp);
+void turnComputerOff(computer &comp);
+void breakComputer(computer &comp);
+
 
 void setup() {
   arduboy.begin();
   arduboy.clear();
   arduboy.setFrameRate(60);
+  arduboy.initRandomSeed();
 
   //initialize keykat
   keykat = keykat_standing;
@@ -39,6 +58,11 @@ void setup() {
 
   //initialize button state
   btnup = btndown = btnleft = btnright = btna = btnb = false;
+
+  //turn all the computers on
+  for(int i=0; i<ncomps; i++) {
+    turnComputerOn(comps[i]);
+  }
 }
 
 
@@ -52,7 +76,8 @@ void loop() {
   //update the buttons
   updateButtons();
     
-  arduboy.clear(); 
+  arduboy.clear();
+  drawComputers(); 
   drawKeyKat();  
   arduboy.display();
 }
@@ -121,5 +146,63 @@ void drawKeyKat()
 
   //draw keykat
   renderSprite(kx, ky, keykat);
+}
+
+
+/*
+ * Update and draw all the computers.  (One frame worth)
+ */
+void drawComputers()
+{
+  for(int i=0; i<ncomps; i++) {
+    //count down to failure
+    if(comps[i].ttf > 0) {
+      comps[i].ttf--;
+
+      //BOOOM
+      if(comps[i].ttf == 0) {
+        breakComputer(comps[i]);
+      }
+    }
+
+    //draw the machine
+    renderSprite(comps[i].x, comps[i].y, comps[i].s);
+  }
+}
+
+
+/*
+ * Turn the computer on (which lasts for a temporary number of frames)
+ */
+void turnComputerOn(computer &comp)
+{
+  //set the machine to working
+  comp.state = ON;
+  comp.s = computer_working;
+
+  //determine how long the computer will work
+  comp.ttf = random(30, maxttf);
+}
+
+
+/*
+ * Turn the computer off
+ */
+void turnComputerOff(computer &comp)
+{
+  //turn the machine off
+  comp.state = OFF;
+  comp.s = computer_off;
+}
+
+
+/*
+ * Do what user's do best!
+ */
+void breakComputer(computer &comp)
+{
+  //break the machine
+  comp.state = BROKEN;
+  comp.s = computer_broken;
 }
 
