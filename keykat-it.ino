@@ -9,6 +9,7 @@ bool btnleft;
 bool btnright;
 bool btna;
 bool btnb;
+bool togglePressed;
 
 //frame status (0-59)
 unsigned int frameCount = 0;
@@ -41,8 +42,8 @@ computer comps[] = {{computer_off, 16, 0, 0, OFF},
                     {computer_off, 104, 32, 0, OFF}};
                     
 unsigned int ncomps = 12;
-unsigned int maxttf = 600;
-
+unsigned int maxttf = 3000;
+unsigned int minttf = 60;
 
 //Prototypes
 void renderSprite(int x, int y, sprite &s);
@@ -53,7 +54,7 @@ void turnComputerOn(computer &comp);
 void turnComputerOff(computer &comp);
 void breakComputer(computer &comp);
 bool collision(int x, int y);
-
+void keyKatToggle();
 
 void setup() {
   arduboy.begin();
@@ -68,7 +69,7 @@ void setup() {
   kmoving = false;
 
   //initialize button state
-  btnup = btndown = btnleft = btnright = btna = btnb = false;
+  togglePressed = btnup = btndown = btnleft = btnright = btna = btnb = false;
 
   //turn all the computers on
   for(int i=0; i<ncomps; i++) {
@@ -114,13 +115,24 @@ void renderSprite(int x, int y, sprite &s)
  */
 void updateButtons()
 {
+  bool a, b;
+  
   //get the state of each button
   btnup = arduboy.pressed(UP_BUTTON);
   btndown = arduboy.pressed(DOWN_BUTTON);
   btnleft = arduboy.pressed(LEFT_BUTTON);
   btnright = arduboy.pressed(RIGHT_BUTTON);
-  btna = arduboy.pressed(A_BUTTON);
-  btnb = arduboy.pressed(B_BUTTON);
+  a = arduboy.pressed(A_BUTTON);
+  b = arduboy.pressed(B_BUTTON);
+
+  //detect toggle event
+  if((not a and btna) or (not b and btnb)) {
+    togglePressed = true;
+  }
+
+  //record btna and btnb
+  btna = a;
+  btnb = b;
 }
 
 
@@ -165,6 +177,12 @@ void drawKeyKat()
     }
   }
 
+  //handle action buttons
+  if(togglePressed) {
+    keyKatToggle();
+    togglePressed = false;
+  }
+
   //draw keykat
   renderSprite(kx, ky, keykat);
 }
@@ -202,7 +220,7 @@ void turnComputerOn(computer &comp)
   comp.s = computer_working;
 
   //determine how long the computer will work
-  comp.ttf = random(30, maxttf);
+  comp.ttf = random(minttf, maxttf);
 }
 
 
@@ -259,3 +277,37 @@ bool collision(int x, int y)
   //all passed! no collision
   return false;
 }
+
+
+/*
+ * This function has KeyKat toggle all computers within her reach.
+ * (She has to be touching the keyboards)
+ */
+void keyKatToggle()
+{
+  int kxmax, kymax;
+  int cxmax, cymax;
+
+  //check the computers
+  kxmax = kx + 7;
+  kymax = ky + 15;
+  for(int i=0; i<ncomps; i++) {
+    //computer bounding boxes (for keyboard touching)
+    cxmax = comps[i].x + 7;
+    cymax = comps[i].y + 6;
+
+    //just simple axis aligned bounding box
+    if(kx <= cxmax && comps[i].x <= kxmax && ky <= cymax && comps[i].y <= kymax) {
+      //toggle the machine
+      if(comps[i].state != OFF) {
+        turnComputerOff(comps[i]);
+        if(maxttf > 600) {
+          maxttf -= 20; //mwahaha
+        }
+      } else {
+        turnComputerOn(comps[i]);
+      }
+    }
+  }
+}
+
