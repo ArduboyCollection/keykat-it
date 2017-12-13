@@ -34,22 +34,30 @@ computer comps[] = {{computer_off, 16, 0, 0, OFF},
                     {computer_off, 80, 0, 0, OFF},
                     {computer_off, 92, 0, 0, OFF},
                     {computer_off, 104, 0, 0, OFF},
-                    {computer_off, 16, 32, 0, OFF},
-                    {computer_off, 28, 32, 0, OFF},
-                    {computer_off, 40, 32, 0, OFF},
-                    {computer_off, 80, 32, 0, OFF},
-                    {computer_off, 92, 32, 0, OFF},
-                    {computer_off, 104, 32, 0, OFF}};
-                    
+                    {computer_off, 16, 27, 0, OFF},
+                    {computer_off, 28, 27, 0, OFF},
+                    {computer_off, 40, 27, 0, OFF},
+                    {computer_off, 80, 27, 0, OFF},
+                    {computer_off, 92, 27, 0, OFF},
+                    {computer_off, 104, 27, 0, OFF}};
+const unsigned int STARTMAXTTF = 3000;
+const unsigned int MINMAXTTF=600;
+const unsigned int SPEEDUP=20;                   
 unsigned int ncomps = 12;
-unsigned int maxttf = 3000;
+unsigned int maxttf = STARTMAXTTF;
 unsigned int minttf = 60;
+
+
+//scoring information
+unsigned int nworking=0; // number of working computers
+unsigned int score=0;
 
 //Prototypes
 void renderSprite(int x, int y, sprite &s);
 void updateButtons();
 void drawKeyKat();
 void drawComputers();
+void drawScore();
 void turnComputerOn(computer &comp);
 void turnComputerOff(computer &comp);
 void breakComputer(computer &comp);
@@ -91,6 +99,7 @@ void loop() {
   arduboy.clear();
   drawComputers(); 
   drawKeyKat();  
+  drawScore();
   arduboy.display();
 }
 
@@ -211,6 +220,21 @@ void drawComputers()
 
 
 /*
+ * Draw the score and the number of working computers
+ */
+void drawScore()
+{
+  arduboy.setCursor(0, 56);
+  arduboy.print("Score: ");
+  arduboy.print(score);
+  arduboy.setCursor(80, 56);
+  arduboy.print("Up: ");
+  arduboy.print(100*nworking/ncomps);
+  arduboy.print("%");
+}
+
+
+/*
  * Turn the computer on (which lasts for a temporary number of frames)
  */
 void turnComputerOn(computer &comp)
@@ -218,6 +242,7 @@ void turnComputerOn(computer &comp)
   //set the machine to working
   comp.state = ON;
   comp.s = computer_working;
+  nworking++;
 
   //determine how long the computer will work
   comp.ttf = random(minttf, maxttf);
@@ -229,6 +254,13 @@ void turnComputerOn(computer &comp)
  */
 void turnComputerOff(computer &comp)
 {
+  //was it working before?
+  if(comp.state == ON) {
+    nworking--;
+  } else {
+    score += 50 + (5000*(STARTMAXTTF-maxttf)) / MINMAXTTF;
+  }
+  
   //turn the machine off
   comp.state = OFF;
   comp.s = computer_off;
@@ -243,6 +275,7 @@ void breakComputer(computer &comp)
   //break the machine
   comp.state = BROKEN;
   comp.s = computer_broken;
+  nworking--;
 }
 
 
@@ -301,8 +334,8 @@ void keyKatToggle()
       //toggle the machine
       if(comps[i].state != OFF) {
         turnComputerOff(comps[i]);
-        if(maxttf > 600) {
-          maxttf -= 20; //mwahaha
+        if(maxttf > MINMAXTTF) {
+          maxttf -= SPEEDUP; //mwahaha
         }
       } else {
         turnComputerOn(comps[i]);
