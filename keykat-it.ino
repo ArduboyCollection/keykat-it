@@ -246,6 +246,7 @@ void turnComputerOn(computer &comp)
 
   //determine how long the computer will work
   comp.ttf = random(minttf, maxttf);
+  arduboy.tunes.playScore(snd_on);
 }
 
 
@@ -264,6 +265,7 @@ void turnComputerOff(computer &comp)
   //turn the machine off
   comp.state = OFF;
   comp.s = computer_off;
+  arduboy.tunes.playScore(snd_off);
 }
 
 
@@ -276,6 +278,7 @@ void breakComputer(computer &comp)
   comp.state = BROKEN;
   comp.s = computer_broken;
   nworking--;
+  arduboy.tunes.playScore(snd_fail);
 }
 
 
