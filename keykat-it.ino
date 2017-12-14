@@ -1,3 +1,20 @@
+/*
+    keykat-it: Turn the computers off and back on again!
+    Copyright (C) 2017 Robert Lowe <pngwen@gmail.com>
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 #include <Arduboy.h>
 #include "assets.h"
 Arduboy arduboy;
@@ -15,8 +32,11 @@ bool togglePressed;
 unsigned int frameCount = 0;
 
 //game status
-enum {SPLASH, PLAY, OVER} game_state;
+enum {SPLASH, INSTRUCTIONS, PLAY, OVER} game_state;
 
+//instruction screen sprites
+sprite instruction_working = computer_working;
+sprite instruction_broken = computer_broken;
 
 //keykat status
 int kx, ky;  //position
@@ -58,6 +78,7 @@ unsigned int score=0;
 
 //Prototypes
 void splashScreen();
+void instructions();
 void playGame();
 void gameOver();
 void renderSprite(int x, int y, sprite &s);
@@ -112,6 +133,9 @@ void loop() {
     case SPLASH:
       splashScreen();
       break;
+    case INSTRUCTIONS:
+      instructions();
+      break;
     case PLAY:
       playGame();
       break;
@@ -128,8 +152,38 @@ void splashScreen()
 {
   arduboy.drawBitmap(0, 0, splash_screen_bitmap, 128, 64, WHITE);  
 
-  //see if we are ready to move into gamepaly
-  if(btna or btnb or btnup or btndown or btnleft or btnright) {
+  //see if we are ready to move into instructions
+  if(togglePressed) {
+    game_state = INSTRUCTIONS;
+    togglePressed = btnup = btndown = btnleft = btnright = btna = btnb = false;
+  }
+}
+
+
+/* display some instructions */
+void instructions()
+{
+  //Instruction Text
+  arduboy.setCursor(0,0);
+  arduboy.print("Turn broken");
+  arduboy.setCursor(0,8);
+  arduboy.print("computers off &");
+  arduboy.setCursor(0,16);
+  arduboy.print("back on again.");
+  arduboy.setCursor(0,40);
+  arduboy.print("Keep at least");
+  arduboy.setCursor(0, 48);
+  arduboy.print("25% up at");
+  arduboy.setCursor(0, 56);
+  arduboy.print("all times!");
+
+  //show the example systems
+  renderSprite(103, 4, instruction_broken);
+
+  renderSprite(103, 40, instruction_working);
+  
+  //see if we are ready to move into gameplay
+  if(togglePressed) {
     game_state = PLAY;
   }
 }
