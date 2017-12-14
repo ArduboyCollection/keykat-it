@@ -15,7 +15,7 @@ bool togglePressed;
 unsigned int frameCount = 0;
 
 //game status
-enum {SPLASH, PLAY} game_state;
+enum {SPLASH, PLAY, OVER} game_state;
 
 
 //keykat status
@@ -62,7 +62,9 @@ void playGame();
 void gameOver();
 void renderSprite(int x, int y, sprite &s);
 void updateButtons();
+void moveKeyKat();
 void drawKeyKat();
+void updateComputers();
 void drawComputers();
 void drawScore();
 void turnComputerOn(computer &comp);
@@ -113,6 +115,9 @@ void loop() {
     case PLAY:
       playGame();
       break;
+    case OVER:
+      gameOver();
+      break;
   }
   arduboy.display();
 }
@@ -133,9 +138,19 @@ void splashScreen()
 /* play the game */
 void playGame()
 {
+  //update status
+  moveKeyKat();
+  updateComputers();
+
+  //draw the stuff
   drawComputers(); 
   drawKeyKat();  
   drawScore();  
+
+  //check for game over
+  if(nworking < 3) {
+    game_state = OVER;
+  }
 }
 
 
@@ -144,7 +159,14 @@ void playGame()
  */
 void gameOver()
 {
-  
+  //draw the stuff
+  drawComputers(); 
+  drawKeyKat();  
+  drawScore();  
+
+  //display game over message
+  arduboy.setCursor(37, 18);
+  arduboy.print("GAME OVER");
 }
 
 
@@ -188,11 +210,10 @@ void updateButtons()
   btnb = b;
 }
 
-
 /*
- * Update and draw KeyKat
+ * Allow keykat to move.
  */
-void drawKeyKat()
+void moveKeyKat()
 {
   bool nowmoving = btnup or btndown or btnleft or btnright or btna or btnb;
   
@@ -235,11 +256,43 @@ void drawKeyKat()
     keyKatToggle();
     togglePressed = false;
   }
+}
 
+/*
+ * Update and draw KeyKat
+ */
+void drawKeyKat()
+{
   //draw keykat
   renderSprite(kx, ky, keykat);
 }
 
+
+/*
+ * Update the status of all computers and count the
+ * ones that are working.
+ */
+void updateComputers()
+{
+  nworking = 0;
+
+  for(int i=0; i<ncomps; i++) {
+    //count down to failure
+    if(comps[i].ttf > 0) {
+      comps[i].ttf--;
+
+      //BOOOM
+      if(comps[i].ttf == 0 and comps[i].state == ON) {
+        breakComputer(comps[i]);
+      }
+    }
+
+    //count the working
+    if(comps[i].state == ON) {
+      nworking++;
+    }
+  }
+}
 
 /*
  * Update and draw all the computers.  (One frame worth)
@@ -247,16 +300,6 @@ void drawKeyKat()
 void drawComputers()
 {
   for(int i=0; i<ncomps; i++) {
-    //count down to failure
-    if(comps[i].ttf > 0) {
-      comps[i].ttf--;
-
-      //BOOOM
-      if(comps[i].ttf == 0) {
-        breakComputer(comps[i]);
-      }
-    }
-
     //draw the machine
     renderSprite(comps[i].x, comps[i].y, comps[i].s);
   }
@@ -286,7 +329,6 @@ void turnComputerOn(computer &comp)
   //set the machine to working
   comp.state = ON;
   comp.s = computer_working;
-  nworking++;
 
   //determine how long the computer will work
   comp.ttf = random(minttf, maxttf);
@@ -300,10 +342,8 @@ void turnComputerOn(computer &comp)
 void turnComputerOff(computer &comp)
 {
   //was it working before?
-  if(comp.state == ON) {
-    nworking--;
-  } else {
-    score += 50 + (5000*(STARTMAXTTF-maxttf)) / MINMAXTTF;
+  if(comp.state != ON) {
+    score += 1;
   }
   
   //turn the machine off
@@ -321,7 +361,6 @@ void breakComputer(computer &comp)
   //break the machine
   comp.state = BROKEN;
   comp.s = computer_broken;
-  nworking--;
   arduboy.tunes.playScore(snd_fail);
 }
 
