@@ -14,6 +14,10 @@ bool togglePressed;
 //frame status (0-59)
 unsigned int frameCount = 0;
 
+//game status
+enum {SPLASH, PLAY} game_state;
+
+
 //keykat status
 int kx, ky;  //position
 sprite keykat;
@@ -53,6 +57,9 @@ unsigned int nworking=0; // number of working computers
 unsigned int score=0;
 
 //Prototypes
+void splashScreen();
+void playGame();
+void gameOver();
 void renderSprite(int x, int y, sprite &s);
 void updateButtons();
 void drawKeyKat();
@@ -83,6 +90,8 @@ void setup() {
   for(int i=0; i<ncomps; i++) {
     turnComputerOn(comps[i]);
   }
+
+  game_state = SPLASH;
 }
 
 
@@ -97,10 +106,45 @@ void loop() {
   updateButtons();
     
   arduboy.clear();
+  switch(game_state) {
+    case SPLASH:
+      splashScreen();
+      break;
+    case PLAY:
+      playGame();
+      break;
+  }
+  arduboy.display();
+}
+
+
+/* Splash Screen Frame Loop */
+void splashScreen() 
+{
+  arduboy.drawBitmap(0, 0, splash_screen_bitmap, 128, 64, WHITE);  
+
+  //see if we are ready to move into gamepaly
+  if(btna or btnb or btnup or btndown or btnleft or btnright) {
+    game_state = PLAY;
+  }
+}
+
+
+/* play the game */
+void playGame()
+{
   drawComputers(); 
   drawKeyKat();  
-  drawScore();
-  arduboy.display();
+  drawScore();  
+}
+
+
+/* 
+ *  The game is over!  Alert the user.
+ */
+void gameOver()
+{
+  
 }
 
 
