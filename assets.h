@@ -19,7 +19,7 @@
 #define ASSETS_H
 
 struct sprite {
-  unsigned char *bitmap;
+  const unsigned char *bitmap;
   unsigned int width;
   unsigned int height;
   unsigned int frames;
