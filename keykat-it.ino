@@ -153,17 +153,17 @@ void instructions()
 {
   //Instruction Text
   arduboy.setCursor(0,0);
-  arduboy.print("Turn broken");
+  arduboy.print(F("Turn broken"));
   arduboy.setCursor(0,8);
-  arduboy.print("computers off &");
+  arduboy.print(F("computers off &"));
   arduboy.setCursor(0,16);
-  arduboy.print("back on again.");
+  arduboy.print(F("back on again."));
   arduboy.setCursor(0,40);
-  arduboy.print("Keep at least");
+  arduboy.print(F("Keep at least"));
   arduboy.setCursor(0, 48);
-  arduboy.print("25% up at");
+  arduboy.print(F("25% up at"));
   arduboy.setCursor(0, 56);
-  arduboy.print("all times!");
+  arduboy.print(F("all times!"));
 
   //show the example systems
   renderSprite(103, 4, instruction_broken);
@@ -397,10 +397,10 @@ void drawComputers()
 void drawScore()
 {
   arduboy.setCursor(0, 56);
-  arduboy.print("Score: ");
+  arduboy.print(F("Score: "));
   arduboy.print(score);
   arduboy.setCursor(80, 56);
-  arduboy.print("Up: ");
+  arduboy.print(F("Up: "));
   arduboy.print(100*nworking/ncomps);
   arduboy.print("%");
 }
@@ -412,7 +412,7 @@ void drawScore()
 void drawGameOver()
 {
   arduboy.setCursor(37, 18);
-  arduboy.print("GAME OVER");
+  arduboy.print(F("GAME OVER"));
 }
 
 
