@@ -78,23 +78,6 @@ unsigned int minttf = 60;
 unsigned int nworking=0; // number of working computers
 unsigned int score=0;
 
-//Prototypes
-void splashScreen();
-void instructions();
-void playGame();
-void gameOver();
-void renderSprite(int x, int y, sprite &s);
-void updateButtons();
-void moveKeyKat();
-void drawKeyKat();
-void updateComputers();
-void drawComputers();
-void drawScore();
-void turnComputerOn(computer &comp);
-void turnComputerOff(computer &comp);
-void breakComputer(computer &comp);
-bool collision(int x, int y);
-void keyKatToggle();
 
 void setup() {
   arduboy.begin();
@@ -114,19 +97,10 @@ void setup() {
   arduboy.setFrameRate(60);
   arduboy.initRandomSeed();
 
-  //initialize keykat
-  keykat = keykat_standing;
-  kx = 60;
-  ky = 15;
-  kmoving = false;
+  initNew();
 
   //initialize button state
   togglePressed = btnup = btndown = btnleft = btnright = btna = btnb = false;
-
-  //turn all the computers on
-  for(int i=0; i<ncomps; i++) {
-    turnComputerOn(comps[i]);
-  }
 
   game_state = SPLASH;
 }
@@ -211,12 +185,17 @@ void playGame()
   updateComputers();
 
   //draw the stuff
-  drawComputers(); 
-  drawKeyKat();  
-  drawScore();  
+  drawPlay();
 
   //check for game over
   if(nworking < 3) {
+    //draw the game over message and display it
+    drawGameOver();
+    arduboy.display();
+
+    //wait a bit so the game over message is seen
+    arduboy.delayShort(3000);
+
     game_state = OVER;
   }
 }
@@ -228,15 +207,41 @@ void playGame()
 void gameOver()
 {
   //draw the stuff
-  drawComputers(); 
-  drawKeyKat();  
-  drawScore();  
+  drawPlay();
 
   //display game over message
-  arduboy.setCursor(37, 18);
-  arduboy.print("GAME OVER");
+  drawGameOver();
+
+  if(togglePressed) {
+    //start a new game
+    initNew();
+    game_state = PLAY;
+  }
 }
 
+
+/*
+ * Initialize for a new game
+ */
+void initNew()
+{
+  //initialize keykat
+  keykat = keykat_standing;
+  kx = 60;
+  ky = 15;
+  kmoving = false;
+
+  //initialize maximum time to fail
+  maxttf = STARTMAXTTF;
+
+  //turn all the computers on
+  for(int i=0; i<ncomps; i++) {
+    turnComputerOn(comps[i]);
+  }
+
+  //initialize the score
+  score = 0;
+}
 
 /*
  * Render the sprite frame, updating its index as needed.
@@ -326,6 +331,18 @@ void moveKeyKat()
   }
 }
 
+
+/*
+ * Draw the play screen
+ */
+void drawPlay()
+{
+  drawComputers();
+  drawKeyKat();
+  drawScore();
+}
+
+
 /*
  * Update and draw KeyKat
  */
@@ -386,6 +403,16 @@ void drawScore()
   arduboy.print("Up: ");
   arduboy.print(100*nworking/ncomps);
   arduboy.print("%");
+}
+
+
+/*
+ * Draw the game over indication
+ */
+void drawGameOver()
+{
+  arduboy.setCursor(37, 18);
+  arduboy.print("GAME OVER");
 }
 
 
