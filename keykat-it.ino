@@ -15,9 +15,11 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <Arduboy.h>
+#include <Arduboy2.h>
+#include <ArduboyPlaytune.h>
 #include "assets.h"
-Arduboy arduboy;
+Arduboy2 arduboy;
+ArduboyPlaytune tunes(arduboy.audio.enabled);
 
 //button state global
 bool btnup;
@@ -96,6 +98,18 @@ void keyKatToggle();
 
 void setup() {
   arduboy.begin();
+
+  // audio setup
+  tunes.initChannel(PIN_SPEAKER_1);
+#ifndef AB_DEVKIT
+  // if not a DevKit
+  tunes.initChannel(PIN_SPEAKER_2);
+#else
+  // if it's a DevKit
+  tunes.initChannel(PIN_SPEAKER_1); // use the same pin for both channels
+  tunes.toneMutesScore(true);       // mute the score when a tone is sounding
+#endif
+
   arduboy.clear();
   arduboy.setFrameRate(60);
   arduboy.initRandomSeed();
@@ -386,7 +400,7 @@ void turnComputerOn(computer &comp)
 
   //determine how long the computer will work
   comp.ttf = random(minttf, maxttf);
-  arduboy.tunes.playScore(snd_on);
+  tunes.playScore(snd_on);
 }
 
 
@@ -403,7 +417,7 @@ void turnComputerOff(computer &comp)
   //turn the machine off
   comp.state = OFF;
   comp.s = computer_off;
-  arduboy.tunes.playScore(snd_off);
+  tunes.playScore(snd_off);
 }
 
 
@@ -415,7 +429,7 @@ void breakComputer(computer &comp)
   //break the machine
   comp.state = BROKEN;
   comp.s = computer_broken;
-  arduboy.tunes.playScore(snd_fail);
+  tunes.playScore(snd_fail);
 }
 
 
